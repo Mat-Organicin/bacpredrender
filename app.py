@@ -912,6 +912,30 @@ def api_analyze():
             'data': None
         })
 
+@app.route('/api/add_to_container', methods=['POST'])
+def add_to_container():
+    """Generic endpoint to add a bacteriocin to a container (vault or bag)"""
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'}), 400
+    
+    container_type = data.get('container_type')
+    container_id = data.get('container_id')
+    item_id = data.get('item_id')
+    
+    if not container_type or not container_id or not item_id:
+        return jsonify({'success': False, 'message': 'Missing required parameters'}), 400
+    
+    # Route to the appropriate handler based on container type
+    if container_type == 'vault':
+        result = database.add_to_vault(container_id, item_id)
+    elif container_type == 'bag':
+        result = database.add_to_bag(container_id, item_id)
+    else:
+        return jsonify({'success': False, 'message': f'Unknown container type: {container_type}'}), 400
+    
+    return jsonify(result)
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'faa', 'fasta'}
 

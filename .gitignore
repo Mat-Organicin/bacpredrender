@@ -34,4 +34,5 @@ Thumbs.db
 
 # Temporary plot files
 *.png
+!static/images/*.png
 !static/*.png 
