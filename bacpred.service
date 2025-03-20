@@ -1,0 +1,15 @@
+[Unit]
+Description=BacPred - Bacteriocin Analysis Application
+After=network.target postgresql.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/bacpred/biofasta  # Replace with actual path
+ExecStart=/bin/bash /path/to/bacpred/biofasta/start_production.sh
+Restart=on-failure
+# Environment variables can be specified here if needed
+Environment=FLASK_ENV=production
+
+[Install]
+WantedBy=multi-user.target 

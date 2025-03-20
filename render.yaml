@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: bacpred
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: ./build.sh
+    startCommand: gunicorn -c gunicorn_config.py wsgi:app --bind=0.0.0.0:$PORT
+    healthCheckPath: /
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: SECRET_KEY
+        generateValue: true 

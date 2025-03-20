@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}Bacteriocin Analysis{% endblock %}
+
+{% block head %}
+<!-- Add Plotly library for visualizations -->
+<script src="https://cdn.plot.ly/plotly-2.29.0.min.js"></script>
+<style>
+    /* Override any conflicting styles */
+    .js-plotly-plot {
+        width: 100% !important;
+    }
+    .js-plotly-plot .main-svg {
+        width: 100% !important;
+    }
+    .js-plotly-plot .svg-container {
+        width: 100% !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+    <div class="analysis-header">
+        <h1><i class="fas fa-chart-line"></i> Bacteriocin Analysis</h1>
+        <p class="analysis-description">Select vaults and bags to analyze their bacteriocins</p>
+    </div>
+
+    <div class="analysis-selection">
+        <div class="selection-container">
+            <div class="section-header vaults-header">
+                <h2><i class="fas fa-shield-alt"></i> Vaults</h2>
+                <p>Select reference bacteriocins to include in analysis</p>
+            </div>
+            <div class="selection-list" id="vaults-selection">
+                {% if vaults|length > 0 %}
+                    {% for vault in vaults %}
+                    <div class="selection-item vault-item">
+                        <input type="checkbox" id="vault-{{ vault.id }}" value="{{ vault.id }}" class="selection-checkbox vault-checkbox">
+                        <label for="vault-{{ vault.id }}">
+                            <span class="selection-name">{{ vault.name }}</span>
+                            <span class="selection-count">({{ vault.item_count }} items)</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-items">
+                        <p>No vaults available</p>
+                        <a href="/collection_view" class="btn btn-primary">Create a Vault</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="selection-container">
+            <div class="section-header bags-header">
+                <h2><i class="fas fa-briefcase"></i> Bags</h2>
+                <p>Select candidate bacteriocins to include in analysis</p>
+            </div>
+            <div class="selection-list" id="bags-selection">
+                {% if bags|length > 0 %}
+                    {% for bag in bags %}
+                    <div class="selection-item bag-item">
+                        <input type="checkbox" id="bag-{{ bag.id }}" value="{{ bag.id }}" class="selection-checkbox bag-checkbox">
+                        <label for="bag-{{ bag.id }}">
+                            <span class="selection-name">{{ bag.name }}</span>
+                            <span class="selection-count">({{ bag.item_count }} items)</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-items">
+                        <p>No bags available</p>
+                        <a href="/collection_view" class="btn btn-primary">Create a Bag</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="analysis-tools">
+        <div class="tools-header">
+            <h2><i class="fas fa-tools"></i> Analysis Tools</h2>
+            <p>Select an analysis tool to run on the selected bacteriocins</p>
+        </div>
+        <div class="tools-container">
+            <div class="tool-panel">
+                <div class="tool-item">
+                    <button id="umap-tool" class="btn btn-primary tool-button">
+                        <i class="fas fa-project-diagram"></i> UMAP Analysis
+                    </button>
+                    <p class="tool-description">
+                        Visualize bacteriocin sequences in 2D space using UMAP dimensionality reduction.
+                        Reference bacteriocins are shown in gold, candidate bacteriocins in teal.
+                    </p>
+                </div>
+                <div class="tool-item">
+                    <button id="msa-tool" class="btn btn-primary tool-button">
+                        <i class="fas fa-align-justify"></i> Multiple Sequence Alignment
+                    </button>
+                    <p class="tool-description">
+                        Align and compare sequences to identify conserved regions and sequence similarities.
+                        Useful for understanding evolutionary relationships between bacteriocins.
+                    </p>
+                </div>
+                <div class="tool-item">
+                    <button id="phylogeny-tool" class="btn btn-primary tool-button">
+                        <i class="fas fa-sitemap"></i> Phylogenetic Tree
+                    </button>
+                    <p class="tool-description">
+                        Visualize evolutionary relationships between bacteriocin sequences.
+                        Displays sequence relatedness in a hierarchical tree structure.
+                    </p>
+                </div>
+                <p class="select-notice">Please select vaults and bags above to enable analysis.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tool Requirements Section -->
+    <div class="tool-requirements">
+        <div class="tool-requirements-header">
+            <h3><i class="fas fa-info-circle"></i> Tool Requirements</h3>
+        </div>
+        <div class="tool-requirements-content">
+            <div class="requirement-item">
+                <h4><i class="fas fa-align-left"></i> Multiple Sequence Alignment</h4>
+                <p>Works with sequences of <strong>any length</strong>. The alignment algorithm will automatically add gaps where needed to align sequences properly.</p>
+            </div>
+            <div class="requirement-item">
+                <h4><i class="fas fa-sitemap"></i> Phylogenetic Tree</h4>
+                <p>Works with sequences of <strong>any length</strong>. Sequences will be aligned automatically before tree construction.</p>
+            </div>
+            <div class="requirement-item">
+                <h4><i class="fas fa-project-diagram"></i> UMAP Analysis</h4>
+                <p>Works with sequences of <strong>any length</strong>. No special requirements needed.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="analysis-results" id="analysis-results" style="display: none;">
+        <div class="results-header">
+            <h2><i class="fas fa-chart-bar"></i> Analysis Results</h2>
+            <button id="download-results" class="btn btn-primary" disabled>
+                <i class="fas fa-download"></i> Download Results
+            </button>
+        </div>
+        <div class="results-container" id="results-container">
+            <div class="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Running analysis...</p>
+            </div>
+            <div class="placeholder-message">
+                <p>Select vaults/bags and an analysis tool to see results here.</p>
+            </div>
+            
+            <!-- Results areas -->
+            <div id="umap-visualization" class="analysis-result-content" style="display: none;"></div>
+            <div id="msa-visualization" class="analysis-result-content" style="display: none;"></div>
+            <div id="phylogeny-visualization" class="analysis-result-content" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Add a special stylesheet just for plots -->
+<style>
+    /* This ensures enough space for the visualizations */
+    .analysis-tab-content {
+        min-height: 600px;
+        width: 100%;
+    }
+    
+    /* Fix Plotly specific issues */
+    .js-plotly-plot .svg-container {
+        width: 100% !important;
+    }
+    
+    .plot-container, .msa-container, .phylogeny-container, .visualization-content {
+        width: 100%;
+    }
+    
+    /* Give results container enough space */
+    .results-container {
+        min-height: 700px;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+{% block title %}Bacteriocin Collection{% endblock %}
+
+{% block content %}
+<div class="collection-container">
+    <!-- Debug Information (hidden by default) -->
+    <div id="debug-info" style="display: none; background: #f8f9fa; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+        <h4>Debug Information</h4>
+        <div id="debug-content">
+            <p>Loading...</p>
+        </div>
+        <button id="toggle-debug" class="btn btn-sm btn-secondary" onclick="document.getElementById('debug-info').style.display = 'none';">Hide Debug Info</button>
+    </div>
+    
+    <!-- Vaults and Bags Section -->
+    <div class="container-manager">
+        <div class="container-section">
+            <div class="section-header vaults-header">
+                <h2><i class="fas fa-shield-alt"></i> Vaults (Reference Bacteriocins)</h2>
+                <button class="add-container" id="add-vault-btn">
+                    <i class="fas fa-plus"></i> New Vault
+                </button>
+            </div>
+            <div class="container-list" id="vaults-list">
+                {% for vault in vaults %}
+                <div class="container-item vault-item" data-id="{{ vault.id }}" data-type="vault">
+                    <div class="container-info">
+                        <h3>{{ vault.name }}</h3>
+                        <p class="container-meta">{{ vault.item_count }} items</p>
+                    </div>
+                    <div class="container-actions">
+                        <button class="view-container" data-type="vault" data-id="{{ vault.id }}" title="View contents">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="delete-container" data-type="vault" data-id="{{ vault.id }}" title="Delete vault">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="container-section">
+            <div class="section-header bags-header">
+                <h2><i class="fas fa-briefcase"></i> Bags (Candidate Bacteriocins)</h2>
+                <button class="add-container" id="add-bag-btn">
+                    <i class="fas fa-plus"></i> New Bag
+                </button>
+            </div>
+            <div class="container-list" id="bags-list">
+                {% for bag in bags %}
+                <div class="container-item bag-item" data-id="{{ bag.id }}" data-type="bag">
+                    <div class="container-info">
+                        <h3>{{ bag.name }}</h3>
+                        <p class="container-meta">{{ bag.item_count }} items</p>
+                    </div>
+                    <div class="container-actions">
+                        <button class="view-container" data-type="bag" data-id="{{ bag.id }}" title="View contents">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="delete-container" data-type="bag" data-id="{{ bag.id }}" title="Delete bag">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="collection-header">
+        <h1>Bacteriocin Collection</h1>
+        <div class="collection-tabs">
+            <button class="tab-button active" data-tab="all">
+                <i class="fas fa-list"></i> All Bacteriocins
+            </button>
+            <button class="tab-button" data-tab="reference">
+                <i class="fas fa-shield-alt"></i> Reference Bacteriocins
+            </button>
+            <button class="tab-button" data-tab="candidate">
+                <i class="fas fa-flask"></i> Candidate Bacteriocins
+            </button>
+        </div>
+        <div class="collection-tools">
+            <div class="search-sort-container">
+                <div class="search-container">
+                    <form action="/collection_view" method="get">
+                        <input type="text" name="search" placeholder="Search bacteriocins..." value="{{ search }}">
+                        <label for="sort-select">Sort by:</label>
+                        <select id="sort-select" name="sort">
+                            <option value="date-desc" {% if sort_by == 'date-desc' %}selected{% endif %}>Date (newest first)</option>
+                            <option value="date-asc" {% if sort_by == 'date-asc' %}selected{% endif %}>Date (oldest first)</option>
+                            <option value="prob-desc" {% if sort_by == 'prob-desc' %}selected{% endif %}>Probability (high to low)</option>
+                            <option value="prob-asc" {% if sort_by == 'prob-asc' %}selected{% endif %}>Probability (low to high)</option>
+                        </select>
+                        <button type="submit" class="search-submit">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filter Section -->
+    <div class="filter-section">
+        <div class="filter-header">
+            <h3><i class="fas fa-filter"></i> Advanced Filters</h3>
+            <button id="toggle-filters" class="btn btn-sm btn-outline">
+                <i class="fas fa-chevron-down"></i> <span>Show Filters</span>
+            </button>
+        </div>
+        <div class="filter-controls" style="display: none;">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label><i class="fas fa-text-height"></i> Sequence Length</label>
+                    <div class="range-filter">
+                        <input type="number" id="min-length" placeholder="Min" min="0" max="1000">
+                        <span>to</span>
+                        <input type="number" id="max-length" placeholder="Max" min="0" max="1000">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-percentage"></i> Probability</label>
+                    <div class="range-filter">
+                        <input type="number" id="min-prob" placeholder="Min" min="0" max="1" step="0.1">
+                        <span>to</span>
+                        <input type="number" id="max-prob" placeholder="Max" min="0" max="1" step="0.1">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-equals"></i> Same Length As</label>
+                    <select id="same-length-filter">
+                        <option value="">Select Sequence</option>
+                        {% for item in collection_data %}
+                        <option value="{{ item.sequence|length }}">{{ item.sequence_id }} ({{ item.sequence|length }} aa)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button id="apply-filters" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Apply Filters
+                </button>
+                <button id="reset-filters" class="btn btn-outline">
+                    <i class="fas fa-undo"></i> Reset
+                </button>
+                <!-- Bulk Actions -->
+                <div class="bulk-actions">
+                    <button id="add-all-to-vault" class="btn btn-success">
+                        <i class="fas fa-shield-alt"></i> Add All to Vault
+                    </button>
+                    <button id="add-all-to-bag" class="btn btn-success">
+                        <i class="fas fa-briefcase"></i> Add All to Bag
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if error %}
+    <div class="error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <h2>Error loading collection</h2>
+        <p>{{ error }}</p>
+        <button class="retry-button" onclick="window.location.reload()">Retry</button>
+    </div>
+    {% else %}
+    <div class="collection-list">
+        {% if collection_data|length > 0 %}
+            {% for item in collection_data %}
+            <div class="collection-item" data-id="{{ item.id }}" draggable="true" 
+                 data-type="{% if item.probability > 0.9 %}reference{% else %}candidate{% endif %}"
+                 data-tab="all {% if item.probability > 0.9 %}reference{% else %}candidate{% endif %}">
+                <div class="collection-item-header">
+                    <h3 class="collection-item-title">{{ item.name }}</h3>
+                    <div class="collection-meta">
+                        <span class="sequence-id">ID: {{ item.sequence_id }}</span>
+                        <span class="added-date">Added: {{ item.added_date }}</span>
+                    </div>
+                </div>
+                <div class="collection-item-body">
+                    <div class="probability-bar">
+                        <div class="probability-fill" style="width: {{ (item.probability * 100)|round(2) }}%"></div>
+                        <span class="probability-text">{{ (item.probability * 100)|round(2) }}% Bacteriocin Probability</span>
+                    </div>
+                    <div class="sequence-preview-container">
+                        <span class="sequence-label">Sequence:</span>
+                        <span class="sequence-preview">{{ item.sequence[:30] }}{% if item.sequence|length > 30 %}...{% endif %}</span>
+                    </div>
+                    <div class="collection-actions">
+                        <button class="view-full-sequence" data-id="{{ item.id }}" data-name="{{ item.name }}" data-sequence="{{ item.sequence }}" title="View full sequence details">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="same-length-filter" data-length="{{ item.sequence|length }}" title="Find all sequences with the same length">
+                            <i class="fas fa-equals"></i>
+                        </button>
+                        <button class="rename-sequence" data-id="{{ item.id }}" data-name="{{ item.name }}" title="Rename this bacteriocin">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="add-to-vault-direct" data-id="{{ item.id }}" {% if item.probability <= 0.9 %}style="display: none;"{% endif %} title="Add to reference vault">
+                            <i class="fas fa-shield-alt"></i> Vault
+                        </button>
+                        <button class="add-to-bag-direct" data-id="{{ item.id }}" {% if item.probability > 0.9 %}style="display: none;"{% endif %} title="Add to candidate bag">
+                            <i class="fas fa-briefcase"></i> Bag
+                        </button>
+                        <div class="dropdown">
+                            <button class="dropdown-toggle" title="More options">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <button class="add-to-vault" data-id="{{ item.id }}" {% if item.probability <= 0.9 %}style="display: none;"{% endif %} title="Add to reference vault">
+                                    <i class="fas fa-shield-alt"></i> Add to Vault
+                                </button>
+                                <button class="add-to-bag" data-id="{{ item.id }}" {% if item.probability > 0.9 %}style="display: none;"{% endif %} title="Add to candidate bag">
+                                    <i class="fas fa-briefcase"></i> Add to Bag
+                                </button>
+                                <button class="download-sequence" data-id="{{ item.id }}" data-name="{{ item.name }}" data-sequence="{{ item.sequence }}" title="Download as FASTA file">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <button class="remove-from-collection" data-id="{{ item.id }}" data-name="{{ item.name }}" title="Remove from collection">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="no-results">
+            <i class="fas fa-search"></i>
+            <h2>No bacteriocins found</h2>
+            <p>{% if search %}No results match your search criteria. Try a different search term.{% else %}Your collection is empty. Add some predictions to see them here.{% endif %}</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Prediction Tool</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Sequence View Modal -->
+<div class="modal" id="sequenceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="sequenceModalTitle">Sequence Details</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="sequence-display" id="sequenceDisplay"></div>
+            <button class="copy-sequence">
+                <i class="fas fa-copy"></i> Copy Sequence
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Container Items Modal -->
+<div class="modal" id="containerItemsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="containerModalTitle">Items</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="container-items-list" id="containerItemsList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Add to Container Modal -->
+<div class="modal" id="addToContainerModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="addToContainerTitle">Add to Container</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="container-selection-list" id="containerSelectionList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Container Modal -->
+<div class="modal" id="createContainerModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="createContainerTitle">Create New Container</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="createContainerForm">
+                <div class="form-group">
+                    <label for="containerName">Name:</label>
+                    <input type="text" id="containerName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="containerDescription">Description:</label>
+                    <textarea id="containerDescription" name="description"></textarea>
+                </div>
+                <input type="hidden" id="containerType" name="type" value="">
+                <button type="submit" class="submit-button">Create</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Notifications -->
+<div class="notification" id="notification" style="display: none; position: fixed; top: 20px; right: 20px; max-width: 300px; z-index: 1000;">
+    <button class="notification-close">&times;</button>
+    <div class="notification-content">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-message"></span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/collection.js"></script>
+<script>
+    const collectionData = {{ collection_data_json|safe }};
+    {% if loading is defined and loading %}
+    const isLoading = true;
+    {% else %}
+    const isLoading = false;
+    {% endif %}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Debug information function
+        function showDebugInfo(data) {
+            const debugEl = document.getElementById('debug-info');
+            const debugContent = document.getElementById('debug-content');
+            debugEl.style.display = 'block';
+            
+            let html = `
+                <div>
+                    <p><strong>Current Time:</strong> ${new Date().toLocaleString()}</p>
+                    <p><strong>API Response:</strong> ${data ? 'Received' : 'Not Available'}</p>
+                `;
+                
+            if (data) {
+                html += `
+                    <p><strong>Success:</strong> ${data.success}</p>
+                    <p><strong>Item Count:</strong> ${data.data ? data.data.length : 0}</p>
+                    <p><strong>Message:</strong> ${data.message || 'None'}</p>
+                `;
+                
+                if (data.debug) {
+                    html += `
+                        <p><strong>Database Info:</strong> ${data.debug.database_info}</p>
+                        <p><strong>Query Parameters:</strong> ${JSON.stringify(data.debug.query_params)}</p>
+                    `;
+                }
+            }
+            
+            html += `
+                <p><strong>Browser Info:</strong> ${navigator.userAgent}</p>
+                <p><strong>Window Size:</strong> ${window.innerWidth}x${window.innerHeight}</p>
+                <p><strong>Collection Data from Template:</strong> ${collectionData ? collectionData.length : 0} items</p>
+                <p><strong>Loading Flag:</strong> ${isLoading}</p>
+            </div>`;
+            
+            debugContent.innerHTML = html;
+        }
+        
+        // Add an event listener to the page to show debug with Shift+D
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'D' && e.shiftKey) {
+                const debugEl = document.getElementById('debug-info');
+                debugEl.style.display = debugEl.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+
+        // Add event listeners to the view buttons
+        document.querySelectorAll('.view-full-sequence').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const sequence = this.getAttribute('data-sequence');
+                
+                openSequenceModal(name, sequence);
+            });
+        });
+        
+        // Add event listeners for view container buttons
+        document.querySelectorAll('.view-container').forEach(button => {
+            button.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                const id = this.getAttribute('data-id');
+                
+                viewContainerItems(type, id);
+            });
+        });
+        
+        // Add event listeners for add to container buttons
+        document.querySelectorAll('.add-to-vault-direct, .add-to-vault').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                showAddToContainerModal('vault', id);
+            });
+        });
+        
+        document.querySelectorAll('.add-to-bag-direct, .add-to-bag').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                showAddToContainerModal('bag', id);
+            });
+        });
+        
+        // Add event listeners for remove buttons
+        document.querySelectorAll('.remove-from-collection').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                
+                if (confirm(`Are you sure you want to remove "${name}" from your collection?`)) {
+                    removeFromCollection(id);
+                }
+            });
+        });
+        
+        // Add event listeners for download buttons
+        document.querySelectorAll('.download-sequence').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const sequence = this.getAttribute('data-sequence');
+                
+                downloadFasta(id, name, sequence);
+            });
+        });
+        
+        // Add event listeners for container creation
+        document.getElementById('add-vault-btn').addEventListener('click', function() {
+            showCreateContainerModal('vault');
+        });
+        
+        document.getElementById('add-bag-btn').addEventListener('click', function() {
+            showCreateContainerModal('bag');
+        });
+        
+        // Make sure to call the right existing functions
+        // This part will hook into your collection.js file
+        if (typeof window.collectionReady === 'function') {
+            window.collectionReady();
+        }
+        
+        // Show initial debug info if needed
+        if (window.location.search.includes('debug=true')) {
+            showDebugInfo(null);
+        }
+    });
+</script>
+{% endblock %}

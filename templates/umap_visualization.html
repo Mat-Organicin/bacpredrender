@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMAP Visualization | Bacteriocin Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-2.29.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #167A6E;
+            --light-color: #f5f7fa;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--light-color);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .visualization-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-panel {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+        }
+        
+        .legend h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .color-reference {
+            background-color: #f39c12;
+        }
+        
+        .color-candidate {
+            background-color: #2980b9;
+        }
+        
+        .info-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+        
+        .info-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .info-card p {
+            margin: 5px 0;
+            color: #7f8c8d;
+        }
+        
+        .stats {
+            margin-top: 15px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            min-width: 150px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .plot-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            min-height: 600px;
+        }
+        
+        .js-plotly-plot {
+            width: 100% !important;
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 30px;
+            background-color: #fdedee;
+            border-radius: 8px;
+            border: 1px solid #f1c0c5;
+            color: #e74c3c;
+        }
+        
+        .error-message h3 {
+            color: #e74c3c;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        /* Media queries for responsive design */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .info-panel {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-project-diagram"></i> UMAP Visualization</h1>
+                <p>Bacteriocin Sequence Similarity Analysis</p>
+            </div>
+            <div class="header-actions">
+                <a href="/analysis" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Analysis</a>
+                <button id="download-btn" class="btn"><i class="fas fa-download"></i> Download Image</button>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="legend">
+                <h3>Legend</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-color color-reference"></div>
+                        <div>Reference Sequences</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-candidate"></div>
+                        <div>Candidate Sequences</div>
+                    </div>
+                </div>
+                <div class="stats" id="vis-stats">
+                    <!-- Stats will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3>About This Visualization</h3>
+                <p>This UMAP plot shows bacteriocin sequences in 2D space based on their amino acid features.</p>
+                <p>Points that are closer together represent sequences that are more similar to each other.</p>
+                <p>Reference sequences (from vaults) are shown in gold, while candidate sequences (from bags) are shown in blue.</p>
+                
+                <div class="interaction-tips">
+                    <h4>Interaction Tips:</h4>
+                    <ul>
+                        <li>Hover over points to see sequence details</li>
+                        <li>Click and drag to pan the view</li>
+                        <li>Use the scroll wheel to zoom in/out</li>
+                        <li>Double-click to reset the view</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div id="umap-container" class="plot-container">
+            <!-- UMAP plot will be inserted here -->
+            <div id="loading-message" style="text-align: center; padding: 30px;">
+                <p>Loading UMAP visualization...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the UMAP HTML from localStorage
+            const umapHtml = localStorage.getItem('lastUmapHtml');
+            const plotContainer = document.getElementById('umap-container');
+            const loadingMessage = document.getElementById('loading-message');
+            
+            // Get metadata if available
+            try {
+                const metadata = JSON.parse(localStorage.getItem('umap_metadata') || '{}');
+                const statsContainer = document.getElementById('vis-stats');
+                
+                // Display stats
+                if (statsContainer && metadata) {
+                    statsContainer.innerHTML = `
+                        <div class="stat-item">
+                            <div class="stat-label">Total</div>
+                            <div class="stat-value">${metadata.points || 0}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Reference</div>
+                            <div class="stat-value">${metadata.reference_count || 0}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Candidate</div>
+                            <div class="stat-value">${metadata.candidate_count || 0}</div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error("Error parsing metadata:", e);
+            }
+            
+            if (umapHtml) {
+                // Insert the UMAP HTML
+                loadingMessage.style.display = 'none';
+                plotContainer.innerHTML = umapHtml;
+                
+                // Initialize Plotly if needed
+                setTimeout(() => {
+                    if (window.Plotly) {
+                        const plotlyDivs = document.querySelectorAll('.js-plotly-plot');
+                        plotlyDivs.forEach(div => {
+                            try {
+                                if (div._context) {
+                                    window.Plotly.relayout(div, {});
+                                }
+                            } catch (e) {
+                                console.error("Error relaying out plot:", e);
+                            }
+                        });
+                    }
+                    
+                    // Trigger window resize to make sure plots are properly sized
+                    window.dispatchEvent(new Event('resize'));
+                }, 200);
+            } else {
+                // Show error message
+                plotContainer.innerHTML = `
+                    <div class="error-message">
+                        <h3>No Visualization Data Available</h3>
+                        <p>Please go back to the Analysis page and run the UMAP analysis again.</p>
+                        <a href="/analysis" class="btn" style="margin-top: 15px;">Return to Analysis</a>
+                    </div>
+                `;
+            }
+            
+            // Add download button functionality
+            const downloadBtn = document.getElementById('download-btn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', function() {
+                    const plotlyDiv = document.querySelector('.js-plotly-plot');
+                    if (plotlyDiv && window.Plotly) {
+                        Plotly.downloadImage(plotlyDiv, {
+                            format: 'png',
+                            width: 1200,
+                            height: 800,
+                            filename: 'bacteriocin_umap_visualization'
+                        });
+                    } else {
+                        alert('Unable to download. Visualization not fully loaded.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

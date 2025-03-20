@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Bacteriocin Motifs Reference - BacPred{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="motifs-header">
+        <h1>Bacteriocin Motifs Reference</h1>
+        <p class="subtitle">This page shows the motifs that are automatically highlighted throughout BacPred</p>
+    </div>
+
+    <div class="card motifs-info">
+        <div class="card-header">
+            <h2><i class="fas fa-info-circle"></i> About Motif Detection</h2>
+        </div>
+        <div class="card-body">
+            <p>BacPred automatically highlights important bacteriocin motifs in sequence text throughout the application. 
+               Hover over any highlighted pattern to see detailed information about what that motif represents.</p>
+            <p>The highlighting system recognizes both exact matches (like "YGNGV") and pattern-based motifs 
+               (like "CxxC" where "x" can be any amino acid).</p>
+            <div class="motif-example">
+                <h3>Example:</h3>
+                <code class="sequence">MKFNLDLRKALKGFGRGASYC</code>
+                <p><small>Try hovering over the highlighted portions above!</small></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="motifs-container">
+        <h2>Bacteriocin Motif Catalog</h2>
+        
+        <!-- Class I: Lantibiotics -->
+        <div class="motif-class-section">
+            <h3>Class I: Lantibiotics</h3>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>Leader Peptide FNLD Motif</h4>
+                    <span class="motif-pattern">Pattern: FNLD</span>
+                </div>
+                <div class="motif-body">
+                    <p>A conserved segment at the C-terminus of the leader peptide that directs post‐translational modifications 
+                    (via LanB/LanC enzymes) and proper cleavage before the mature peptide forms.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">MSTKDFNLDLVSVSKKDSGASPR</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Bierbaum & Sahl (2009)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>Lanthionine Ring Formation Motif</h4>
+                    <span class="motif-pattern">Pattern: SxxxC</span>
+                </div>
+                <div class="motif-body">
+                    <p>Represents a dehydrated serine (S) and a downstream cysteine (C) separated by ~3 variable residues; 
+                    these pair to form a thioether (lanthionine) bridge that rigidifies the mature peptide and supports 
+                    lipid II binding (e.g., nisin's ring A).</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">ITSISLCTPGCKTGALMGCNMKTATCHCSIHVSK</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Bierbaum & Sahl (2009)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>Hinge Region</h4>
+                    <span class="motif-pattern">Pattern: NMK</span>
+                </div>
+                <div class="motif-body">
+                    <p>A short (~3-residue) flexible linker (commonly "NMK") connecting the lipid II-binding domain 
+                    to the membrane-active segment, allowing the peptide to bend during pore formation.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">ITSISLCTPGCKTGALMGCNMKTATCHCSIHVSK</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Drider et al. (2006)
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Class IIa: Pediocin-Like Bacteriocins -->
+        <div class="motif-class-section">
+            <h3>Class IIa: Pediocin-Like Bacteriocins</h3>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>Pediocin Box – YGNGV Motif</h4>
+                    <span class="motif-pattern">Pattern: YGNGV</span>
+                </div>
+                <div class="motif-body">
+                    <p>A highly conserved N-terminal sequence critical for binding the mannose-phosphotransferase (Man-PTS) 
+                    receptor on target cells; it defines the pediocin-like family.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">KYYGNGVTCGKHSCSVDWGKATTCIINNGAMAWATGGHQGNHKC</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Drider et al. (2006)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>Disulfide-Bridge Motif</h4>
+                    <span class="motif-pattern">Pattern: CxxC</span>
+                </div>
+                <div class="motif-body">
+                    <p>Two cysteines (C) separated by ~2 variable residues form a disulfide bond that stabilizes the N-terminal 
+                    β-sheet structure needed for correct receptor binding.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">KYYGNGVTCGKHSCSVDWGKATTCIINNGAMAWATGGHQGNHKC</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Drider et al. (2006)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>C-Terminal Hydrophobic Helix/Tail</h4>
+                    <span class="motif-pattern">Pattern: xxALxxVLxx</span>
+                </div>
+                <div class="motif-body">
+                    <p>An amphipathic stretch rich in hydrophobic residues (e.g., A, L, V) that folds into a helix, 
+                    facilitating membrane insertion after receptor binding.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">RTGKHALVLKGLAKFWALVLKA</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Drider et al. (2006); Ekblad et al. (2016)
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Class IIb: Two-Peptide Bacteriocins -->
+        <div class="motif-class-section">
+            <h3>Class IIb: Two-Peptide Bacteriocins</h3>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>GxxxG Helix–Helix Interaction Motif</h4>
+                    <span class="motif-pattern">Pattern: GxxxG</span>
+                </div>
+                <div class="motif-body">
+                    <p>Two glycine (G) residues separated by any three amino acids; this "glycine zipper" promotes close 
+                    helix–helix packing between complementary peptides that act together to form a membrane pore.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">SRNAYNGIKAGIVGSAMAGATVGAVASLFGPHAGAVMGVKVSKH</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Ekblad et al. (2016)
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Class III: Bacteriolysins -->
+        <div class="motif-class-section">
+            <h3>Class III: Bacteriolysins</h3>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>Catalytic HxH Motif</h4>
+                    <span class="motif-pattern">Pattern: HxH</span>
+                </div>
+                <div class="motif-body">
+                    <p>A motif featuring two histidine residues (with 0–2 intervening residues) that coordinate a Zn²⁺ ion 
+                    in metallopeptidase bacteriolysins, essential for cell wall degradation.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">MKKIAGLFALAATIFGAPVYAQETHYLNHVGKGAFTKDQPANMGLYERSDKDAGKLLYKMTRYGWNHQEPHMGKDL</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Yuan et al. (2004); Bierbaum & Sahl (2009)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>LysM Motif</h4>
+                    <span class="motif-pattern">Pattern: xxGxxDxx</span>
+                </div>
+                <div class="motif-body">
+                    <p>A short sequence fragment from the LysM domain, where conserved glycine (G) and aspartate (D) residues 
+                    contribute to peptidoglycan binding.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">ITVGKNDGSVCDGSLRPYVEADGSILYTVGEFVLPNELTGQ</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Cleveland et al. (2001)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="motif-item">
+                <div class="motif-header">
+                    <h4>SH3b Motif</h4>
+                    <span class="motif-pattern">Pattern: xxYxxPxx</span>
+                </div>
+                <div class="motif-body">
+                    <p>A representative segment from the SH3b domain, with conserved tyrosine (Y) and proline (P) that help 
+                    stabilize the beta-barrel fold for specific binding to cell wall components.</p>
+                    <div class="motif-example">
+                        <p>Example sequence containing this motif:</p>
+                        <code class="sequence">EIYFKYPTVGDYRMVIEGPYKDIPAFRKVEGSVNRFHTEIFDKYTGNK</code>
+                    </div>
+                    <div class="motif-reference">
+                        Reference: Cleveland et al. (2001)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight all the examples manually to ensure they're visible
+        setTimeout(function() {
+            // Force a second highlighting pass for demo purposes
+            if (typeof highlightMotifs === 'function') {
+                highlightMotifs();
+            }
+        }, 500);
+    });
+</script>
+{% endblock %} 

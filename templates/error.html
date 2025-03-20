@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Error{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <h2>Something went wrong</h2>
+        <p>{{ error }}</p>
+        <button class="retry-button" onclick="window.location.reload()">Retry</button>
+        <a href="/" class="btn btn-primary">Go to Home</a>
+    </div>
+</div>
+{% endblock %}

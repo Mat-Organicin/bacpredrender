@@ -1,0 +1,25 @@
+from flask import render_template
+
+@app.route('/analysis')
+def analysis_page():
+    """Render the analysis page"""
+    vaults = collection.list_vaults()
+    bags = collection.list_bags()
+    
+    # Count items in each vault and bag
+    for vault in vaults:
+        vault['item_count'] = collection.count_vault_items(vault['id'])
+    
+    for bag in bags:
+        bag['item_count'] = collection.count_bag_items(bag['id'])
+    
+    app.logger.info(f"Analysis page requested. Available vaults: {len(vaults)}, Available bags: {len(bags)}")
+    return render_template('analysis.html', vaults=vaults, bags=bags)
+
+@app.route('/umap_visualization')
+def umap_visualization_page():
+    """Render the dedicated UMAP visualization page"""
+    app.logger.info("UMAP visualization page requested")
+    return render_template('umap_visualization.html')
+
+@app.route('/api/analyze', methods=['POST']) 
