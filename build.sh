@@ -16,11 +16,14 @@ echo "Creating necessary directories..."
 mkdir -p logs
 mkdir -p uploads
 mkdir -p data
+mkdir -p static/images
 
-# Set appropriate permissions
+# Make sure static files have the right permissions
+echo "Setting appropriate permissions..."
 chmod -R 755 logs
 chmod -R 755 uploads
 chmod -R 755 data
+chmod -R 755 static
 
 # Initialize database - use a simple script that imports the database module
 echo "Setting up database..."

@@ -27,15 +27,30 @@ def init_connection_pool():
     """Initialize the database connection pool"""
     global connection_pool
     try:
-        connection_pool = psycopg2.pool.SimpleConnectionPool(
-            1,  # minconn
-            10,  # maxconn
-            host=DB_HOST,
-            port=DB_PORT,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD
-        )
+        # Check if DATABASE_URL is provided (Render environment)
+        database_url = os.getenv('DATABASE_URL')
+        
+        if database_url:
+            # Use the direct DATABASE_URL from Render with SSL
+            connection_pool = psycopg2.pool.SimpleConnectionPool(
+                1,  # minconn
+                10,  # maxconn
+                database_url,
+                sslmode='require'
+            )
+        else:
+            # Use individual connection parameters for local development
+            connection_pool = psycopg2.pool.SimpleConnectionPool(
+                1,  # minconn
+                10,  # maxconn
+                host=DB_HOST,
+                port=DB_PORT,
+                database=DB_NAME,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                sslmode='prefer'  # Use SSL if available but don't require it for local
+            )
+        
         print("Database connection pool created successfully")
         
         # Initialize tables
