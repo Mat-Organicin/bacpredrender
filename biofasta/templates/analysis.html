@@ -1,0 +1,13 @@
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script src="{{ url_for('static', filename='js/motif-highlighter.js') }}"></script>
+<script>
+// Direct MSA visualization enhancements - motif highlighting disabled for MSA container
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("MSA motif handling is disabled by user request");
+    
+    // Ensure the motif highlighter doesn't interfere with MSA visualizations
+    // The findPlotlyElements function has been disabled in motif-highlighter.js
+});
+</script>
+{% endblock %} 
